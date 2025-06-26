@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AWS ARN Parser</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+            background-color: #f8f9fa;
+        }
+        .container {
+            background: #ffffff;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border: 1px solid #e9ecef;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+            transition: border-color 0.3s ease;
+        }
+        input[type="text"]:focus {
+            outline: none;
+            border-color: #FF9900;
+            box-shadow: 0 0 0 3px rgba(255, 153, 0, 0.1);
+        }
+        button {
+            background: #FF9900;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            margin-top: 10px;
+            transition: background-color 0.3s ease;
+            font-weight: 600;
+        }
+        button:hover {
+            background: #E8890B;
+        }
+        h1 {
+            color: #232F3E;
+            border-bottom: 3px solid #FF9900;
+            padding-bottom: 10px;
+        }
+        h2 {
+            color: #232F3E;
+        }
+        .result {
+            background: white;
+            padding: 15px;
+            border-radius: 4px;
+            margin-top: 15px;
+            border: 1px solid #e9ecef;
+        }
+        .error {
+            background: #fff2f0;
+            border-color: #ffcdd2;
+            color: #c62828;
+        }
+        pre {
+            background: #f5f5f5;
+            padding: 10px;
+            border-radius: 4px;
+            overflow-x: auto;
+            border-left: 4px solid #FF9900;
+        }
+        code {
+            background-color: #f5f5f5;
+            padding: 2px 4px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+            color: #232F3E;
+        }
+        ul li {
+            margin-bottom: 8px;
+        }
+    </style>
+</head>
+<body>
+    <h1>AWS ARN Parser</h1>
+    <p>Enter an AWS ARN to parse its components:</p>
+    
+    <div class="container">
+        <input type="text" id="arnInput" placeholder="arn:aws:s3:::my-bucket/folder/file.txt" 
+               value="arn:aws:lambda:us-east-1:123456789012:function:my-function">
+        <button onclick="parseARN()">Parse ARN</button>
+        
+        <div id="result"></div>
+    </div>
+
+    <h2>API Usage</h2>
+    <p>You can also use the API directly:</p>
+    <pre>GET /api/parse-arn?arn=arn:aws:lambda:us-east-1:123456789012:function:my-function</pre>
+
+    <h2>Example ARNs to try:</h2>
+    <ul>
+        <li><code>arn:aws:s3:::my-bucket/folder/file.txt</code></li>
+        <li><code>arn:aws:lambda:us-east-1:123456789012:function:my-function</code></li>
+        <li><code>arn:aws:ec2:us-west-2:123456789012:instance/i-1234567890abcdef0</code></li>
+        <li><code>arn:aws:iam::123456789012:user/username</code></li>
+    </ul>
+
+    <script>
+        async function parseARN() {
+            const arn = document.getElementById('arnInput').value;
+            const resultDiv = document.getElementById('result');
+            
+            if (!arn) {
+                resultDiv.innerHTML = '<div class="result error">Please enter an ARN</div>';
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/parse-arn?arn=${encodeURIComponent(arn)}`);
+                const data = await response.json();
+                
+                if (response.ok) {
+                    resultDiv.innerHTML = `
+                        <div class="result">
+                            <h3>Parsed ARN Components:</h3>
+                            <pre>${JSON.stringify(data, null, 2)}</pre>
+                        </div>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `
+                        <div class="result error">
+                            <h3>Error:</h3>
+                            <pre>${JSON.stringify(data, null, 2)}</pre>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="result error">
+                        <h3>Error:</h3>
+                        <p>Failed to parse ARN: ${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+
+        // Allow Enter key to submit
+        document.getElementById('arnInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                parseARN();
+            }
+        });
+    </script>
+</body>
+</html>
